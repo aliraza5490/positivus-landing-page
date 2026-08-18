@@ -68,11 +68,11 @@ export default function CaseStudies() {
       </div>
 
       {/* Mobile View: Horizontal scrollable carousel / cards */}
-      <div className="md:hidden flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none">
+      <div className="md:hidden -mx-4 px-6 sm:-mx-6 sm:px-8 flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {caseStudiesData.map((item) => (
           <div
             key={`mobile-${item.id}`}
-            className="bg-[#191A23] text-white rounded-[35px] p-8 min-w-[85vw] sm:min-w-[340px] snap-center flex flex-col justify-between gap-6 shrink-0"
+            className="bg-[#191A23] text-white rounded-[40px] p-8 sm:p-10 w-[82vw] max-w-[360px] snap-start flex flex-col justify-between gap-6 shrink-0"
           >
             <p className="text-base leading-relaxed text-gray-200">{item.text}</p>
             <Link
