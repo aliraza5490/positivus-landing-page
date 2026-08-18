@@ -109,7 +109,7 @@ export default function Services() {
             className={`${service.bgColor} border border-[#191A23] rounded-[35px] sm:rounded-[45px] p-8 sm:p-10 lg:p-12 shadow-positivus hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[0_2px_0_0_#191A23] transition-all duration-200 flex flex-col justify-between min-h-[300px] relative overflow-hidden group`}
           >
             {/* Top / Left: Title with two-line badges */}
-            <div className="flex flex-col items-start -space-y-1 z-10">
+            <div className="flex flex-col items-start space-y-0 z-10">
               <span
                 className={`${service.badgeBg} ${service.badgeTextColor} text-2xl sm:text-3xl font-medium px-2 py-0.5 rounded-[7px] leading-none inline-block`}
               >
