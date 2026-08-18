@@ -10,32 +10,17 @@ const logos = [
 ];
 
 export default function LogosMarquee() {
+  // Duplicate logos to ensure seamless looping on all screen sizes including wide desktops
+  const marqueeLogos = [...logos, ...logos, ...logos];
+
   return (
     <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 overflow-hidden">
-      {/* Desktop View: Clean evenly spaced grid/flex */}
-      <div className="hidden md:flex items-center justify-between gap-8 flex-wrap">
-        {logos.map((logo, index) => (
-          <div
-            key={`desktop-${index}`}
-            className="relative h-10 w-28 lg:w-32 grayscale hover:grayscale-0 transition-all duration-300 opacity-80 hover:opacity-100 flex items-center justify-center"
-          >
-            <Image
-              src={logo.src}
-              alt={`${logo.name} logo`}
-              fill
-              className="object-contain"
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Mobile View: Infinite marquee animation */}
-      <div className="md:hidden flex overflow-x-hidden relative">
-        <div className="flex animate-marquee gap-12 items-center">
-          {logos.concat(logos).map((logo, index) => (
+      <div className="flex overflow-x-hidden relative [mask-image:linear-gradient(to_right,transparent_0%,black_8%,black_92%,transparent_100%)]">
+        <div className="flex animate-marquee gap-10 md:gap-16 items-center">
+          {marqueeLogos.concat(marqueeLogos).map((logo, index) => (
             <div
               key={`marquee-${index}`}
-              className="relative h-8 w-24 shrink-0 grayscale flex items-center justify-center"
+              className="relative h-8 md:h-10 w-24 md:w-32 shrink-0 grayscale hover:grayscale-0 transition-all duration-300 opacity-80 hover:opacity-100 flex items-center justify-center cursor-pointer"
             >
               <Image
                 src={logo.src}
@@ -50,3 +35,4 @@ export default function LogosMarquee() {
     </section>
   );
 }
+

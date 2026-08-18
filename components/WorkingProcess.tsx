@@ -91,29 +91,51 @@ export default function WorkingProcess() {
                 </div>
 
                 {/* Circular +/- button */}
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full border border-[#191A23] bg-[#F3F3F3] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-200">
-                  {isOpen ? (
-                    <span className="text-2xl sm:text-3xl font-bold text-[#191A23] leading-none mb-1">
-                      −
-                    </span>
-                  ) : (
-                    <span className="text-2xl sm:text-3xl font-bold text-[#191A23] leading-none mb-1">
-                      +
-                    </span>
-                  )}
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full border border-[#191A23] bg-[#F3F3F3] flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300">
+                  <svg
+                    className={`w-4 h-4 sm:w-6 sm:h-6 text-[#191A23] transition-transform duration-300 ease-in-out ${
+                      isOpen ? "rotate-180" : "rotate-0"
+                    }`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <line
+                      x1="12"
+                      y1="5"
+                      x2="12"
+                      y2="19"
+                      className={`transition-all duration-300 origin-center ${
+                        isOpen ? "scale-y-0 opacity-0" : "scale-y-100 opacity-100"
+                      }`}
+                    />
+                  </svg>
                 </div>
               </button>
 
               {/* Collapsible Content */}
-              {isOpen && (
-                <div className="px-6 sm:px-8 lg:px-10 pb-8 sm:pb-10 lg:pb-12 animate-in fade-in duration-200">
-                  <div className="border-t border-[#191A23] pt-6 sm:pt-8">
-                    <p className="text-sm sm:text-lg text-[#191A23] leading-relaxed">
-                      {step.description}
-                    </p>
+              <div
+                className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+                  isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div
+                    className={`px-6 sm:px-8 lg:px-10 pb-8 sm:pb-10 lg:pb-12 transition-opacity duration-300 ${
+                      isOpen ? "opacity-100 delay-100" : "opacity-0"
+                    }`}
+                  >
+                    <div className="border-t border-[#191A23] pt-6 sm:pt-8">
+                      <p className="text-sm sm:text-lg text-[#191A23] leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
