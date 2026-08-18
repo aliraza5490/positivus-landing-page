@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import SectionHeading from "./SectionHeading";
 
 interface Testimonial {
@@ -43,15 +44,68 @@ const testimonialsData: Testimonial[] = [
   },
 ];
 
+const COPIES = 5;
+const extendedData = Array.from({ length: COPIES }, () => testimonialsData).flat();
+const INITIAL_INDEX = testimonialsData.length * 2; // 10 (middle set, index 0 of testimonialsData)
+
 export default function Testimonials() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [virtualIndex, setVirtualIndex] = useState(INITIAL_INDEX);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [translateX, setTranslateX] = useState(0);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const currentIndex = virtualIndex % testimonialsData.length;
+
+  const updatePosition = useCallback((index: number) => {
+    const container = containerRef.current;
+    const targetCard = cardRefs.current[index];
+    if (!container || !targetCard) return;
+
+    const containerCenter = container.offsetWidth / 2;
+    const cardCenter = targetCard.offsetLeft + targetCard.offsetWidth / 2;
+    setTranslateX(containerCenter - cardCenter);
+  }, []);
+
+  useEffect(() => {
+    updatePosition(virtualIndex);
+  }, [virtualIndex, updatePosition]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      updatePosition(virtualIndex);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [virtualIndex, updatePosition]);
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev === testimonialsData.length - 1 ? 0 : prev + 1));
+    setIsTransitioning(true);
+    setVirtualIndex((prev) => prev + 1);
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev === 0 ? testimonialsData.length - 1 : prev - 1));
+    setIsTransitioning(true);
+    setVirtualIndex((prev) => prev - 1);
+  };
+
+  const handleDotClick = (targetOriginalIndex: number) => {
+    setIsTransitioning(true);
+    const currentOriginalIndex = virtualIndex % testimonialsData.length;
+    let diff = targetOriginalIndex - currentOriginalIndex;
+    if (diff > testimonialsData.length / 2) diff -= testimonialsData.length;
+    if (diff < -testimonialsData.length / 2) diff += testimonialsData.length;
+    setVirtualIndex((prev) => prev + diff);
+  };
+
+  const handleTransitionEnd = () => {
+    setIsTransitioning(false);
+    if (virtualIndex < testimonialsData.length) {
+      setVirtualIndex((prev) => prev + testimonialsData.length * 2);
+    } else if (virtualIndex >= testimonialsData.length * 4) {
+      setVirtualIndex((prev) => prev - testimonialsData.length * 2);
+    }
   };
 
   return (
@@ -61,38 +115,53 @@ export default function Testimonials() {
         description="Hear from Our Satisfied Clients: Read Our Testimonials to Learn More about Our Digital Marketing Services"
       />
 
-      <div className="bg-[#191A23] rounded-[35px] sm:rounded-[45px] py-12 sm:py-16 lg:py-20 px-4 sm:px-8 lg:px-12 text-white relative overflow-hidden">
-        {/* Testimonials Carousel Display */}
-        <div className="relative min-h-[300px] flex items-center justify-center max-w-4xl mx-auto">
-          {testimonialsData.map((item, index) => {
-            const isActive = index === currentIndex;
-            if (!isActive) return null;
+      <div className="bg-[#191A23] rounded-[35px] sm:rounded-[45px] py-12 sm:py-16 lg:py-20 text-white relative overflow-hidden">
+        {/* Testimonials Carousel Slider Track */}
+        <div ref={containerRef} className="w-full overflow-hidden relative">
+          <div
+            className={`flex items-stretch gap-6 sm:gap-10 md:gap-12 ${
+              isTransitioning
+                ? "transition-transform duration-500 ease-in-out"
+                : "transition-none"
+            }`}
+            style={{
+              transform: `translateX(${translateX}px)`,
+              width: "max-content",
+            }}
+            onTransitionEnd={handleTransitionEnd}
+          >
+            {extendedData.map((item, index) => {
+              return (
+                <div
+                  key={`${item.id}-${index}`}
+                  ref={(el) => {
+                    cardRefs.current[index] = el;
+                  }}
+                  className="w-[85vw] sm:w-[520px] md:w-[580px] lg:w-[606px] shrink-0 flex flex-col items-center"
+                >
+                  {/* Speech Bubble */}
+                  <div className="relative w-full border border-[#B9FF66] rounded-[35px] sm:rounded-[45px] p-6 sm:p-10 lg:p-12 mb-8 bg-[#191A23] min-h-[220px] sm:min-h-[200px] flex items-center">
+                    <p className="text-sm sm:text-base lg:text-lg leading-relaxed text-gray-100 font-normal">
+                      &ldquo;{item.text}&rdquo;
+                    </p>
 
-            return (
-              <div
-                key={item.id}
-                className="w-full flex flex-col items-center animate-in fade-in zoom-in-95 duration-300"
-              >
-                {/* Speech Bubble */}
-                <div className="relative w-full border border-[#B9FF66] rounded-[35px] sm:rounded-[45px] p-6 sm:p-10 lg:p-12 mb-8 bg-[#191A23]">
-                  <p className="text-sm sm:text-base lg:text-lg leading-relaxed text-gray-100">
-                    &ldquo;{item.text}&rdquo;
-                  </p>
+                    {/* Bubble pointer triangle */}
+                    <div className="absolute -bottom-[15px] left-12 sm:left-16 w-7 h-7 bg-[#191A23] border-r border-b border-[#B9FF66] rotate-45" />
+                  </div>
 
-                  {/* Bubble pointer triangle */}
-                  <div className="absolute -bottom-4 left-12 sm:left-16 w-8 h-8 bg-[#191A23] border-r border-b border-[#B9FF66] rotate-45" />
+                  {/* Author Info */}
+                  <div className="self-start pl-14 sm:pl-20">
+                    <h4 className="text-lg sm:text-xl font-medium text-[#B9FF66]">
+                      {item.author}
+                    </h4>
+                    <p className="text-sm sm:text-base text-gray-300">
+                      {item.role}
+                    </p>
+                  </div>
                 </div>
-
-                {/* Author Info */}
-                <div className="self-start pl-12 sm:pl-16">
-                  <h4 className="text-lg sm:text-xl font-medium text-[#B9FF66]">
-                    {item.author}
-                  </h4>
-                  <p className="text-sm sm:text-base text-gray-300">{item.role}</p>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* Carousel Navigation Bar */}
@@ -119,28 +188,30 @@ export default function Testimonials() {
           </button>
 
           {/* Star Pagination Indicators */}
-          <div className="flex items-center gap-3 sm:gap-4">
-            {testimonialsData.map((_, index) => (
-              <button
-                key={`dot-${index}`}
-                onClick={() => setCurrentIndex(index)}
-                className="focus:outline-none transition-all duration-200 cursor-pointer"
-                aria-label={`Go to slide ${index + 1}`}
-              >
-                {/* 4-pointed star shape */}
-                <svg
-                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all duration-200 ${
-                    index === currentIndex
-                      ? "text-[#B9FF66] scale-125"
-                      : "text-white opacity-60 hover:opacity-100"
-                  }`}
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
+          <div className="flex items-center gap-4 sm:gap-5">
+            {testimonialsData.map((_, index) => {
+              const isActive = index === currentIndex;
+              return (
+                <button
+                  key={`dot-${index}`}
+                  onClick={() => handleDotClick(index)}
+                  className="p-1 focus:outline-none transition-transform hover:scale-125 cursor-pointer flex items-center justify-center"
+                  aria-label={`Go to slide ${index + 1}`}
                 >
-                  <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
-                </svg>
-              </button>
-            ))}
+                  <Image
+                    src={
+                      isActive
+                        ? "/assets/current_pagination_item_star.svg"
+                        : "/assets/default_pagination_star_icon.svg"
+                    }
+                    alt={isActive ? "Current slide" : `Slide ${index + 1}`}
+                    width={14}
+                    height={14}
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain"
+                  />
+                </button>
+              );
+            })}
           </div>
 
           {/* Next Arrow */}
